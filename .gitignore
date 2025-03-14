@@ -4,5 +4,6 @@ bin/
 include/
 lib/
 vendor/
-lib64/*
+lib64/
 share/
+pyvenv.cfg
