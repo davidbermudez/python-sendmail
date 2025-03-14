@@ -1,0 +1,8 @@
+.env
+plantilla.html
+bin/
+include/
+lib/
+vendor/
+lib64/*
+share/
