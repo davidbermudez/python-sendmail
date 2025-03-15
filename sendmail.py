@@ -24,7 +24,7 @@ def enviar_email(destinatario, mensaje_html, imagen_oculta_url, subject):
     servidor_smtp = 'smtp.gmail.com'
     puerto = 587
     remitente = os.getenv("USERNAME")
-    contraseña = os.getenv("PASS_GMAIL")
+    contraseña = os.getenv("PASS_GMAIL1")
 
     # Crea un objeto de conexión SMTP
     server = smtplib.SMTP(servidor_smtp, puerto)
@@ -32,14 +32,16 @@ def enviar_email(destinatario, mensaje_html, imagen_oculta_url, subject):
     server.login(remitente, contraseña)
 
     # Construye el mensaje MIME
-    mensaje = MIMEMultipart()
+    mensaje = MIMEMultipart('related')
     mensaje['From'] = remitente
     mensaje['To'] = destinatario
     mensaje['Subject'] = subject
 
     # Adjunta el cuerpo del mensaje en formato HTML
     mensaje.attach(MIMEText(mensaje_html, 'html'))
-
+    # Adjunta el cuerpo del mensaje en formato TXT
+    # mensaje.attach(MIMEText(mensaje_txt, 'plain'))
+    
     # Añade la imagen oculta con el token en la URL
     imagen_oculta_html = f'<img src="{imagen_oculta_url}" width="1" height="1" style="display:none">'
     mensaje.attach(MIMEText(imagen_oculta_html, 'html'))
@@ -53,8 +55,8 @@ def enviar_email(destinatario, mensaje_html, imagen_oculta_url, subject):
     try:
         server.sendmail(remitente, destinatario, mensaje.as_string())
         result = True
-    except ValueError:
-        print(f"Error enviando correo a {destinatario}: {ValueError}")
+    except Exception  as e:
+        print(f"Error enviando correo a {destinatario}: {e}")
         result = False
 
     # Cierra la conexión SMTP
@@ -93,39 +95,55 @@ def leer_plantilla_html(nombre_archivo):
 def render_template(archivo_csv):
     imagen_oculta_url_base = 'https://usuarios.augc.org/access_mail.php?'  # URL base de la imagen oculta
     contenido = lee_datos(archivo_csv)
-    plantilla_html = leer_plantilla_html('plantilla_correo.html')
+    plantilla_html = leer_plantilla_html('plantilla.html')
     nombre = '1'
     while(nombre!=''):
         nombre = ''
         for row in contenido:
-            if(row[7]==''):
+            if(row[12]==''):
                 print (row)
-                nombre = row[0]
-                netpol = row[6]
-                delegacion = row[5]
-                email_ = row[3]
+                nombre = row[1]
+                curso_pf = row[7]
+                wellington = row[10]
+                delegacion = row[6]
+                email_ = row[5]
+                tokenTPV = row[11]
                 token = generar_token()
                 # Genera una URL única para la imagen oculta con el token
                 imagen_oculta_url = f"{imagen_oculta_url_base}correo_id={token}"
                 # Actualiza el archivo CSV con el token generado
-                row[7] = token
+                row[12] = token
                 break
         if(nombre!='' and email_!='EMAIL'):
+            cursos = ''
+            if(curso_pf!=''):
+                cursos = f'<ul><li>{curso_pf}</li>'
+            if(wellington!=''):
+                cursos += f'<li>{wellington}</li>'
+            cursos += '</ul>'
             mensaje_html = plantilla_html.format(
-                nombre=nombre,
-                netpol=netpol,
+                title='Felicidades, ya tienes tu curso',
+                article=f'<p>Hola {nombre},<br><br>Has sido admitido/a para la realización de los cursos del Plan de Formación de 2025 que \
+                    elegiste:<p/>{cursos}<p>Como recordarás en el proceso de solicitud, el acceso al curso requiere el pago de una fianza de 20,00€, que \
+                    te será devuelta íntegramente al finalizar el curso. El abono de la fianza se realizará a través de la pasarela de pago seguro de \
+                    AUGC</p></p><p><b>Tienes hasta el 23 de marzo para efectuar el pago</b></p> \
+                    <p>A partir de ese día, comenzaremos a enviar por email las instrucciones de acceso a los cursos</p><p>Un saludo.</p>',
                 delegacion=delegacion,
-                imagen_oculta_url=imagen_oculta_url
+                enlace='https://tpv.augc.org/index.php?token=' + tokenTPV,
+                imagen_oculta_url=imagen_oculta_url,
+                idMessage=token
             )
-            mensaje_html = f'''
-                
-            '''
-            # Solo NETPOL
-            if(netpol!=''):
-                if (enviar_email(email_, mensaje_html, imagen_oculta_url, nombre + ', ya queda poco para acceder a tu curso "' + row[6] + '"')):
+            # mensaje_txt = f"Hola {nombre},\n\nHas sido admitido/a para la realización de los cursos del Plan de Formación de 2025 que \
+            #        elegiste:\n·{curso_pf}\n·{wellington}\n\nComo recordarás en el proceso de solicitud, el acceso al curso requiere el pago de una fianza de 20,00€, que \
+            #        te será devuelta íntegramente al finalizar el curso. El abono de la fianza se realizará a través de la pasarela de pago seguro de \
+            #        AUGC\n\nTienes hasta el 23 de marzo para efectuar el pago\nA partir de ese día, comenzaremos a enviar por email las instrucciones de acceso a los cursos \
+            #        Copia y pega la siguiente URL en tu navegador para realizar el pago: https://tpv.augc.org/index.php?token={tokenTPV}\n\nUn saludo."
+            # Solo curso_pf
+            if(curso_pf!=''):
+                if (enviar_email(email_, mensaje_html, imagen_oculta_url, 'Enhorabuena ' + nombre + ', has sido admitido/a en los cursos de AUGC')):
                     print(f"Correo enviado a {email_}")
                 else:
-                    row[7] = 'ERROR'
+                    row[12] = 'ERROR'
 
             # reescribimos archivo
             escribe_datos(archivo_csv, contenido)
@@ -133,5 +151,6 @@ def render_template(archivo_csv):
 
 
 if __name__ == "__main__":
-    archivo_csv = 'enero_2025.csv'
+    archivo_csv = 'FILTRADAS.csv'
+    archivo_csv = 'Pruebas.csv'
     render_template(archivo_csv)
