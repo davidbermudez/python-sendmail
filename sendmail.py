@@ -32,7 +32,7 @@ def enviar_email(destinatario, mensaje_html, imagen_oculta_url, subject):
     server.login(remitente, contraseña)
 
     # Construye el mensaje MIME
-    mensaje = MIMEMultipart('related')
+    mensaje = MIMEMultipart()
     mensaje['From'] = remitente
     mensaje['To'] = destinatario
     mensaje['Subject'] = subject
@@ -152,5 +152,5 @@ def render_template(archivo_csv):
 
 if __name__ == "__main__":
     archivo_csv = 'FILTRADAS.csv'
-    archivo_csv = 'Pruebas.csv'
+    # archivo_csv = 'Pruebas.csv'
     render_template(archivo_csv)
