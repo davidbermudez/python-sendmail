@@ -95,43 +95,39 @@ def leer_plantilla_html(nombre_archivo):
 def render_template(archivo_csv):
     imagen_oculta_url_base = 'https://usuarios.augc.org/access_mail.php?'  # URL base de la imagen oculta
     contenido = lee_datos(archivo_csv)
-    plantilla_html = leer_plantilla_html('base.html')
+    plantilla_html = leer_plantilla_html('base copy.html')
     nombre = '1'
     while(nombre!=''):
         nombre = ''
         for row in contenido:
-            if(row[12]==''):
+            if(row[10]==''):
                 print (row)
                 nombre = row[1]
-                curso_pf = row[7]
-                wellington = row[10]
+                curso_pf = row[7]                
                 delegacion = row[6]
-                email_ = row[5]
-                tokenTPV = row[11]
+                email_ = row[5]                
                 token = generar_token()
                 # Genera una URL única para la imagen oculta con el token
                 imagen_oculta_url = f"{imagen_oculta_url_base}correo_id={token}"
                 # Actualiza el archivo CSV con el token generado
-                row[12] = token
+                row[10] = token
                 break
         if(nombre!='' and email_!='EMAIL'):
-            cursos = '<ul>'
-            if(curso_pf!=''):
-                cursos = f'<li>{curso_pf}</li>'
-            if(wellington!=''):
-                cursos += f'<li>{wellington}</li>'
-            cursos += '</ul>'
             mensaje_html = plantilla_html.format(
-                title='Felicidades, ya tienes tu curso',
-                article=f'<p>Hola {nombre},<br><br>Has sido admitido/a para la realización de los cursos del Plan de Formación de 2025 que \
-                    elegiste:<p/>{cursos}<p>Como recordarás en el proceso de solicitud, el acceso al curso requiere el pago de una fianza de 20,00€, que \
-                    te será devuelta íntegramente al finalizar el curso. El abono de la fianza se realizará a través de la pasarela de pago seguro de \
-                    AUGC</p></p><p><b>Tienes hasta el 23 de marzo para efectuar el pago</b></p> \
-                    <p>A partir de ese día, comenzaremos a enviar por email las instrucciones de acceso a los cursos</p><p>Un saludo.</p>',
-                delegacion = delegacion,
-                enlace_url='https://tpv.augc.org/index.php?token=' + tokenTPV,
-                enlace_text = 'Pagar fianza',
-                sign = f'Saludos',
+                title='CAMBIO DE FECHAS CURSOS ONLINE AUGC',
+                article=f'<p>Estimado/a {nombre},<br><br>Por cuestiones organizativas es preciso modificar la fecha de inicio de los cursos siguiente impartidos por ISFES: \
+                        <ul><li>DETECCIÓN DE ALCOHOL Y DROGAS EN CONDUCTORES EN LA INTERVENCIÓN POLICIAL<br>Fecha de Inicio: 15/09/2025, fecha fin: 02/11/2025</li> \
+                        <li>TRÁFICO ILÍCITO DE VEHÍCULOS Y CIRCULACIÓN INTERNACIONAL DE VEHÍCULOS EXTRANJEROS<br>Fecha de Inicio: 06/10/2025, fecha fin: 23/11/2025</li> \
+                        <li>DOCUMENTOSCOPIA POLICIAL<br>Fecha de Inicio: 10/11/2025, fecha fin 18/12/2025</li></ul> \
+                        <p>El curso que solicitaste fue el {curso_pf}</p> \
+                        <p>Lamentamos las molestias que esta decisión pueda haberte ocasionado. En cualquier caso puedes optar por cualquiera de las siguientes opciones:</p> \
+                        <ol><li>Aceptar las nuevas fechas y realizar el curso elegido después del verano</li> \
+                        <li>Elegir cualquier otro curso de los disponibles en ISFES (Consulta este enlace: https://www.isfes.es/cursos-online/)</li> \
+                        <li>Solicitar la devolución de la fianza de 20,00 € que abonaste para acceder al curso</li></ol> \
+                        <p>Por ello, te rogamos que envíes un correo a formacion@augc.org, con tu decisión a la mayor brevedad (NO RESPONDAS A ESTA DIRECCIÓN AUTOMATIZADA)</p> \
+                        <p><b>De no recibirse una respuesta en los próximos 5 días, entenderemos que optas por hacer el curso en las nuevas fechas acordadas.</b></p>',
+                delegacion = delegacion,                
+                sign = f'Recibe un cordial saludo',
                 image_logo = f'<img src="cid:image1" alt="Logo_AUGC" class="logo" width="411" height="80">',
                 footer = f'ASOCIACIÓN UNIFICADA DE GUARDIAS CIVILES<br> \
                     Calle Puerto Rico, 29. Local C <b>|</b> 28016 Madrid-Spain<br> \
@@ -152,15 +148,9 @@ def render_template(archivo_csv):
                     mencionada. Gracias.</i></p><p><i><b>Antes de imprimir este e-mail piense bien si es necesario hacerlo</b></i></p>',
                 imagen_oculta_url=imagen_oculta_url,
                 idMessage=token
-            )
-            # mensaje_txt = f"Hola {nombre},\n\nHas sido admitido/a para la realización de los cursos del Plan de Formación de 2025 que \
-            #        elegiste:\n·{curso_pf}\n·{wellington}\n\nComo recordarás en el proceso de solicitud, el acceso al curso requiere el pago de una fianza de 20,00€, que \
-            #        te será devuelta íntegramente al finalizar el curso. El abono de la fianza se realizará a través de la pasarela de pago seguro de \
-            #        AUGC\n\nTienes hasta el 23 de marzo para efectuar el pago\nA partir de ese día, comenzaremos a enviar por email las instrucciones de acceso a los cursos \
-            #        Copia y pega la siguiente URL en tu navegador para realizar el pago: https://tpv.augc.org/index.php?token={tokenTPV}\n\nUn saludo."
-            # Solo curso_pf
+            )            
             if(curso_pf!=''):
-                if (enviar_email(email_, mensaje_html, imagen_oculta_url, 'Enhorabuena ' + nombre + ', has sido admitido/a en los cursos de AUGC')):
+                if (enviar_email(email_, mensaje_html, imagen_oculta_url, '[URGENTE] CAMBIO DE FECHAS CURSOS ONLINE AUGC')):
                     print(f"Correo enviado a {email_}")
                 else:
                     row[12] = 'ERROR'
@@ -171,6 +161,7 @@ def render_template(archivo_csv):
 
 
 if __name__ == "__main__":
-    archivo_csv = 'FILTRADAS.csv'
+    # archivo_csv = 'FILTRADAS.csv'
     # archivo_csv = 'Pruebas.csv'
+    archivo_csv = 'Isfes_cambio_fecha.csv'
     render_template(archivo_csv)

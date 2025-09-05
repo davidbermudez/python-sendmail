@@ -95,43 +95,34 @@ def leer_plantilla_html(nombre_archivo):
 def render_template(archivo_csv):
     imagen_oculta_url_base = 'https://usuarios.augc.org/access_mail.php?'  # URL base de la imagen oculta
     contenido = lee_datos(archivo_csv)
-    plantilla_html = leer_plantilla_html('base.html')
+    plantilla_html = leer_plantilla_html('base copy 2.html') # plantilla sin botón
     nombre = '1'
     while(nombre!=''):
         nombre = ''
         for row in contenido:
-            if(row[12]==''):
+            if(row[7]==''):
                 print (row)
-                nombre = row[1]
-                curso_pf = row[7]
-                wellington = row[10]
-                delegacion = row[6]
-                email_ = row[5]
-                tokenTPV = row[11]
+                nombre = row[0]
+                curso_pf = row[6]                
+                delegacion = row[5]
+                email_ = row[4]                
                 token = generar_token()
                 # Genera una URL única para la imagen oculta con el token
                 imagen_oculta_url = f"{imagen_oculta_url_base}correo_id={token}"
                 # Actualiza el archivo CSV con el token generado
-                row[12] = token
+                row[7] = token
                 break
-        if(nombre!='' and email_!='EMAIL'):
-            cursos = '<ul>'
-            if(curso_pf!=''):
-                cursos = f'<li>{curso_pf}</li>'
-            if(wellington!=''):
-                cursos += f'<li>{wellington}</li>'
-            cursos += '</ul>'
+        if(nombre!='' and email_!='EMAIL'):            
             mensaje_html = plantilla_html.format(
-                title='Felicidades, ya tienes tu curso',
-                article=f'<p>Hola {nombre},<br><br>Has sido admitido/a para la realización de los cursos del Plan de Formación de 2025 que \
-                    elegiste:<p/>{cursos}<p>Como recordarás en el proceso de solicitud, el acceso al curso requiere el pago de una fianza de 20,00€, que \
-                    te será devuelta íntegramente al finalizar el curso. El abono de la fianza se realizará a través de la pasarela de pago seguro de \
-                    AUGC</p></p><p><b>Tienes hasta el 23 de marzo para efectuar el pago</b></p> \
-                    <p>A partir de ese día, comenzaremos a enviar por email las instrucciones de acceso a los cursos</p><p>Un saludo.</p>',
+                title='Nuevas fechas de tu curso',
+                article=f'<p>Hola {nombre},<br><br>Tenemos que corregir un error en las fechas que te comunicamos ayer por email. \
+                    Tu curso "{curso_pf}" comienza realmente el <b>06 de octubre</b> y finaliza el <b>16 de noviembre</b>.</p> \
+                    <p>ISFES contactará contigo antes del inicio del curso para facilitarte las instrucciones de acceso.</p> \
+                    <p>Lamentamos las molestias ocasionadas</p>',
                 delegacion = delegacion,
-                enlace_url='https://tpv.augc.org/index.php?token=' + tokenTPV,
-                enlace_text = 'Pagar fianza',
-                sign = f'Saludos',
+                enlace_url='https://aula.isfes.es/',
+                enlace_text = 'ISFES',
+                sign = f'Un cordial saludo',
                 image_logo = f'<img src="cid:image1" alt="Logo_AUGC" class="logo" width="411" height="80">',
                 footer = f'ASOCIACIÓN UNIFICADA DE GUARDIAS CIVILES<br> \
                     Calle Puerto Rico, 29. Local C <b>|</b> 28016 Madrid-Spain<br> \
@@ -152,18 +143,12 @@ def render_template(archivo_csv):
                     mencionada. Gracias.</i></p><p><i><b>Antes de imprimir este e-mail piense bien si es necesario hacerlo</b></i></p>',
                 imagen_oculta_url=imagen_oculta_url,
                 idMessage=token
-            )
-            # mensaje_txt = f"Hola {nombre},\n\nHas sido admitido/a para la realización de los cursos del Plan de Formación de 2025 que \
-            #        elegiste:\n·{curso_pf}\n·{wellington}\n\nComo recordarás en el proceso de solicitud, el acceso al curso requiere el pago de una fianza de 20,00€, que \
-            #        te será devuelta íntegramente al finalizar el curso. El abono de la fianza se realizará a través de la pasarela de pago seguro de \
-            #        AUGC\n\nTienes hasta el 23 de marzo para efectuar el pago\nA partir de ese día, comenzaremos a enviar por email las instrucciones de acceso a los cursos \
-            #        Copia y pega la siguiente URL en tu navegador para realizar el pago: https://tpv.augc.org/index.php?token={tokenTPV}\n\nUn saludo."
-            # Solo curso_pf
+            )            
             if(curso_pf!=''):
-                if (enviar_email(email_, mensaje_html, imagen_oculta_url, 'Enhorabuena ' + nombre + ', has sido admitido/a en los cursos de AUGC')):
+                if (enviar_email(email_, mensaje_html, imagen_oculta_url, 'Corrigiendo error en fechas de curso')):
                     print(f"Correo enviado a {email_}")
                 else:
-                    row[12] = 'ERROR'
+                    row[7] = 'ERROR'
 
             # reescribimos archivo
             escribe_datos(archivo_csv, contenido)
@@ -171,6 +156,5 @@ def render_template(archivo_csv):
 
 
 if __name__ == "__main__":
-    archivo_csv = 'FILTRADAS.csv'
-    # archivo_csv = 'Pruebas.csv'
+    archivo_csv = 'Documentoscopia-correccion.csv'
     render_template(archivo_csv)

@@ -100,37 +100,29 @@ def render_template(archivo_csv):
     while(nombre!=''):
         nombre = ''
         for row in contenido:
-            if(row[12]==''):
+            if(row[7]==''):
                 print (row)
-                nombre = row[1]
-                curso_pf = row[7]
-                wellington = row[10]
-                delegacion = row[6]
-                email_ = row[5]
-                tokenTPV = row[11]
+                nombre = row[0]
+                curso_pf = row[6]                
+                delegacion = row[5]
+                email_ = row[4]                
                 token = generar_token()
                 # Genera una URL única para la imagen oculta con el token
                 imagen_oculta_url = f"{imagen_oculta_url_base}correo_id={token}"
                 # Actualiza el archivo CSV con el token generado
-                row[12] = token
+                row[7] = token
                 break
-        if(nombre!='' and email_!='EMAIL'):
-            cursos = '<ul>'
-            if(curso_pf!=''):
-                cursos = f'<li>{curso_pf}</li>'
-            if(wellington!=''):
-                cursos += f'<li>{wellington}</li>'
-            cursos += '</ul>'
+        if(nombre!='' and email_!='EMAIL'):            
             mensaje_html = plantilla_html.format(
-                title='Felicidades, ya tienes tu curso',
-                article=f'<p>Hola {nombre},<br><br>Has sido admitido/a para la realización de los cursos del Plan de Formación de 2025 que \
-                    elegiste:<p/>{cursos}<p>Como recordarás en el proceso de solicitud, el acceso al curso requiere el pago de una fianza de 20,00€, que \
-                    te será devuelta íntegramente al finalizar el curso. El abono de la fianza se realizará a través de la pasarela de pago seguro de \
-                    AUGC</p></p><p><b>Tienes hasta el 23 de marzo para efectuar el pago</b></p> \
-                    <p>A partir de ese día, comenzaremos a enviar por email las instrucciones de acceso a los cursos</p><p>Un saludo.</p>',
+                title='Tu curso comienza en 7 días',
+                article=f'<p>Hola {nombre},<br><br>Te recordamos que el curso de {curso_pf} comienza el próximo <b>07 de abril</b></p> \
+                    <p>La plataforma ISFES ya se habrá puesto en contacto contigo para indicarte la forma de acceder al curso. Verifica tu bandeja de correo \
+                    no deseado o Spam, y si no tienes aún la comunicación te recomendamos que contactes con ellos a través del siguiente email:</p> \
+                    <ul><li>aula@isfes.es</li></ul><p>Esperamos que disfrutes del curso y te sea de utilidad.</p> \
+                    <p>Al finalizar el curso contacta con tu Delegación enviando el certificado expedido por ISFES y en un plazo muy breve te devolvemos la fianza que abonaste para acceder al curso.</p>',
                 delegacion = delegacion,
-                enlace_url='https://tpv.augc.org/index.php?token=' + tokenTPV,
-                enlace_text = 'Pagar fianza',
+                enlace_url='https://aula.isfes.es/',
+                enlace_text = 'ISFES',
                 sign = f'Saludos',
                 image_logo = f'<img src="cid:image1" alt="Logo_AUGC" class="logo" width="411" height="80">',
                 footer = f'ASOCIACIÓN UNIFICADA DE GUARDIAS CIVILES<br> \
@@ -160,10 +152,10 @@ def render_template(archivo_csv):
             #        Copia y pega la siguiente URL en tu navegador para realizar el pago: https://tpv.augc.org/index.php?token={tokenTPV}\n\nUn saludo."
             # Solo curso_pf
             if(curso_pf!=''):
-                if (enviar_email(email_, mensaje_html, imagen_oculta_url, 'Enhorabuena ' + nombre + ', has sido admitido/a en los cursos de AUGC')):
+                if (enviar_email(email_, mensaje_html, imagen_oculta_url, nombre + ' en 7 días comienza tu curso')):
                     print(f"Correo enviado a {email_}")
                 else:
-                    row[12] = 'ERROR'
+                    row[7] = 'ERROR'
 
             # reescribimos archivo
             escribe_datos(archivo_csv, contenido)
@@ -171,6 +163,5 @@ def render_template(archivo_csv):
 
 
 if __name__ == "__main__":
-    archivo_csv = 'FILTRADAS.csv'
-    # archivo_csv = 'Pruebas.csv'
+    archivo_csv = 'Criminalistica.csv'
     render_template(archivo_csv)
