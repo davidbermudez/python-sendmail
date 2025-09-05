@@ -29,11 +29,11 @@ def html_a_texto(mensaje_html):
     return texto
 
 
-def registrar_envio(archivo_registro, token, email, fecha_hora):
+def registrar_envio(archivo_registro, token, email, fecha_hora, numero):
     # Añade una línea al archivo de registro con token, email y fecha-hora
     with open(archivo_registro, 'a', newline='', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
-        writer.writerow([token, email, fecha_hora])
+        writer.writerow([numero, token, email, fecha_hora])
 
 
 def generar_token():
@@ -110,16 +110,6 @@ def lee_datos(archivo_csv):
 
     return content
 
-
-def escribe_datos(archivo_csv, content):
-    # escribir
-    with open(archivo_csv, 'w', newline='', encoding='utf-8') as csvfile:
-        writer_ = csv.writer(csvfile)
-        for fila in content:
-            writer_.writerow(fila)
-            #print("Escribiendo", fila)
-
-
 def leer_plantilla_html(nombre_archivo):
     with open(nombre_archivo, 'r', encoding='utf-8') as archivo:
         return archivo.read()
@@ -131,12 +121,12 @@ def render_template(archivo_csv):
     contenido = lee_datos(archivo_csv)
     plantilla_html = leer_plantilla_html('template1.html')
     counter = 0
-    for row in contenido:
-        
-        print (row)
+    limite = os.getenv("LIMIT")
+    for row in contenido:        
         nombre = row[1]
         genero = row[3]
         email_ = row[6]
+        print (row)
         if email_ and email_ != 'mail' and nombre != 'Nombre':
             token = generar_token()
             # Genera una URL única para la imagen oculta con el token
@@ -156,29 +146,26 @@ def render_template(archivo_csv):
                     <p>Tu voz es fundamental para el futuro de la Guardia Civil, ¡no dejes pasar esta oportunidad de participar!</p> \
                     <p>¡Te animamos a votar por correspondencia!</p>',
                 enlace_url='https://drive.google.com/file/d/1oRCUoD9HFGhRtzBH8MFn3foPfh-JOnvA/preview',
-                enlace_text = 'Como solicitar el voto por correo',                
+                enlace_text = 'Cómo solicitar el voto por correo',                
                 image_logo = f'<img src="cid:image1" alt="Logo_AUGC" class="logo" width="411" height="80">',
                 image_content = f'<img src="cid:image2" alt="content" class="image" width="600" height="315">',
                 firma = f'Asociación Unificada de Guardias Civiles',                
                 imagen_oculta_url=imagen_oculta_url,
                 idMessage=token
-            )
-            # mensaje_txt = f"Hola {nombre},\n\nHas sido admitido/a para la realización de los cursos del Plan de Formación de 2025 que \
-            #        elegiste:\n·{curso_pf}\n·{wellington}\n\nComo recordarás en el proceso de solicitud, el acceso al curso requiere el pago de una fianza de 20,00€, que \
-            #        te será devuelta íntegramente al finalizar el curso. El abono de la fianza se realizará a través de la pasarela de pago seguro de \
-            #        AUGC\n\nTienes hasta el 23 de marzo para efectuar el pago\nA partir de ese día, comenzaremos a enviar por email las instrucciones de acceso a los cursos \
-            #        Copia y pega la siguiente URL en tu navegador para realizar el pago: https://tpv.augc.org/index.php?token={tokenTPV}\n\nUn saludo."
-            # Solo curso_pf
+            )            
             if enviar_email(email_, mensaje_html, imagen_oculta_url, f'¿{nombre}, sabes que ya puedes votar en las próximas elecciones?'):
                 print(f"Correo enviado a {email_}")
                 fecha_hora = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                registrar_envio(archivo_registro, token, email_, fecha_hora)
+                registrar_envio(archivo_registro, token, email_, fecha_hora, counter)
             else:
                 print(f"Error al enviar a {email_}")
+        else:
+            print(f"Correo no válido o fila de encabezado: {email_}")
+            
         counter += 1
-        if counter == 2000:
+        if counter == limite:
             break
-        time.sleep(15)  # Espera 15 segundos entre cada envío
+        time.sleep(13)  # Espera 13 segundos entre cada envío
 
 
 if __name__ == "__main__":
