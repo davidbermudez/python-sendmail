@@ -47,7 +47,7 @@ def html_a_texto(mensaje_html):
     return texto
 
 def leer_variables_mensaje_yaml(nombre_archivo):
-    with open(nombre_archivo, 'r', encoding='utf-8') as f:
+    with open('templates/' + nombre_archivo, 'r', encoding='utf-8') as f:
         return yaml.safe_load(f)
 
 def registrar_envio(archivo_registro, token, email, fecha_hora, numero, usuario):
@@ -125,7 +125,7 @@ def lee_datos(archivo_csv):
     return content
 
 def leer_plantilla_html(nombre_archivo):
-    with open(nombre_archivo, 'r', encoding='utf-8') as archivo:
+    with open('templates/' + nombre_archivo, 'r', encoding='utf-8') as archivo:
         return archivo.read()
     
 
@@ -182,5 +182,5 @@ def render_template(archivo_csv):
 
 
 if __name__ == "__main__":
-    archivo_csv = 'Mailing_all_delegations_pruebas2.csv'
+    archivo_csv = 'Mailing_all_delegations.csv'
     render_template(archivo_csv)
