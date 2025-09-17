@@ -173,14 +173,15 @@ def render_template(archivo_csv, plantilla_html, mensaje_vars):
             time.sleep(3)  # Espera 3 segundos entre cada envío
         else:
             print(f"Correo no válido o fila de encabezado: {email_}")
-            
+
         
         if counter > int(limite):
-            break        
+            break
 
 
 if __name__ == "__main__":
-    archivo_csv = 'export_user_2025_09_17_19_06_26.csv'
+    #archivo_csv = 'export_user_2025_09_17_19_06_26.csv'
+    archivo_csv = 'new.csv'
     plantilla_html = leer_plantilla_html('template2.html')
     mensaje_vars = leer_variables_mensaje_yaml('mensaje2.yaml')
     render_template(archivo_csv, plantilla_html, mensaje_vars)
