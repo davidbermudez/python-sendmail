@@ -61,7 +61,7 @@ def generar_token():
 
 
 #def enviar_email(destinatario, mensaje_html, imagen_oculta_url, subject):
-def enviar_email(destinatario, mensaje_html, imagen_oculta_url, subject, remitente, clave):
+def enviar_email(destinatario, mensaje_html, imagen_oculta_url, subject, remitente, clave, image):
     # Configura los detalles del servidor SMTP
     servidor_smtp = 'smtp.gmail.com'
     puerto = 587
@@ -94,7 +94,7 @@ def enviar_email(destinatario, mensaje_html, imagen_oculta_url, subject, remiten
     mensaje.attach(image1)
 
     # Añade imagen <image2>
-    image2 = MIMEImage(open('VotoPorCorreo.png', 'rb').read())
+    image2 = MIMEImage(open(image, 'rb').read())
     image2.add_header('Content-ID', '<image2>')
     mensaje.attach(image2)
 
@@ -129,12 +129,10 @@ def leer_plantilla_html(nombre_archivo):
         return archivo.read()
     
 
-def render_template(archivo_csv):
+def render_template(archivo_csv, plantilla_html, mensaje_vars):
     imagen_oculta_url_base = 'https://usuarios.augc.org/access_mail.php?'  # URL base de la imagen oculta
     archivo_registro = 'registro_envios.csv'  # Nuevo archivo para el registro
-    contenido = lee_datos(archivo_csv)
-    plantilla_html = leer_plantilla_html('template1.html')
-    mensaje_vars = leer_variables_mensaje_yaml('mensaje1.yaml')
+    contenido = lee_datos(archivo_csv)    
     counter = 1
     limite = os.getenv("LIMIT")
     num_usuarios = len(USUARIOS)
@@ -165,22 +163,24 @@ def render_template(archivo_csv):
                 imagen_oculta_url=imagen_oculta_url,
                 idMessage=token
             )
-            if enviar_email(email_, mensaje_html, imagen_oculta_url, f'¿{nombre}, sabes que ya puedes votar en las próximas elecciones?', remitente, clave):
+            if enviar_email(email_, mensaje_html, imagen_oculta_url, f'¿{nombre}, qué Guardia Civil crees que merecemos?', remitente, clave, 'banner2.png'):
                 print(f"{counter} Correo enviado a {email_}")
                 fecha_hora = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 registrar_envio(archivo_registro, token, email_, fecha_hora, counter, remitente)
                 counter += 1
             else:
                 print(f"Error al enviar a {email_}")
+            time.sleep(3)  # Espera 3 segundos entre cada envío
         else:
             print(f"Correo no válido o fila de encabezado: {email_}")
             
         
         if counter > int(limite):
-            break
-        time.sleep(3)  # Espera 3 segundos entre cada envío
+            break        
 
 
 if __name__ == "__main__":
-    archivo_csv = 'Mailing_all_delegations.csv'
-    render_template(archivo_csv)
+    archivo_csv = 'export_user_2025_09_17_19_06_26.csv'
+    plantilla_html = leer_plantilla_html('template2.html')
+    mensaje_vars = leer_variables_mensaje_yaml('mensaje2.yaml')
+    render_template(archivo_csv, plantilla_html, mensaje_vars)
