@@ -131,18 +131,28 @@ def leer_plantilla_html(nombre_archivo):
 
 def render_template(archivo_csv, plantilla_html, mensaje_vars):
     imagen_oculta_url_base = 'https://usuarios.augc.org/access_mail.php?'  # URL base de la imagen oculta
-    archivo_registro = 'registro_envios.csv'  # Nuevo archivo para el registro
-    contenido = lee_datos(archivo_csv)    
-    counter = 1
-    limite = os.getenv("LIMIT")
+    #archivo_registro = 'registro_envios.csv'  # Nuevo archivo para el registro
+    contenido = lee_datos(archivo_csv)
+    limite = int(os.getenv("LIMIT"))
     num_usuarios = len(USUARIOS)
-    usuario_idx = 0    
-    for row in contenido:        
+    usuario_idx = 0
+
+    # Obtén el último número enviado
+    counter = obtener_ultimo_numero_envio(archivo_registro) + 1
+
+    emails_enviados = obtener_emails_enviados(archivo_registro)
+    # Saltar las filas ya enviadas
+    contenido = contenido[counter - 1:]
+
+    for row in contenido:
         nombre = row[1]
         genero = row[3]
         email_ = row[6]
         print (row)
         if email_ and email_ != 'mail' and nombre != 'Nombre':
+            if email_ in emails_enviados:
+                print(f"Ya se ha enviado a {email_}, saltando...")
+                continue
             remitente = USUARIOS[usuario_idx]
             clave = CLAVES[usuario_idx]
             usuario_idx = (usuario_idx + 1) % num_usuarios
@@ -174,13 +184,39 @@ def render_template(archivo_csv, plantilla_html, mensaje_vars):
         else:
             print(f"Correo no válido o fila de encabezado: {email_}")
 
-        
         if counter > int(limite):
             break
 
+def obtener_ultimo_numero_envio(archivo_registro):
+    ultimo_numero = 0
+    if os.path.exists(archivo_registro):
+        with open(archivo_registro, 'r', encoding='utf-8') as f:
+            reader = csv.reader(f)
+            next(reader, None)  # Saltar encabezado
+            for row in reader:
+                if row and row[0].isdigit():
+                    ultimo_numero = int(row[0])
+    return ultimo_numero
+
+def obtener_emails_enviados(archivo_registro):
+    emails_enviados = set()
+    if os.path.exists(archivo_registro):
+        with open(archivo_registro, 'r', encoding='utf-8') as f:
+            reader = csv.reader(f)
+            next(reader, None)  # Saltar encabezado
+            for row in reader:
+                if len(row) > 2:
+                    emails_enviados.add(row[2].strip().lower())
+    return emails_enviados
 
 if __name__ == "__main__":
     archivo_csv = 'export_user_2025_09_17_19_06_26.csv'
+    archivo_registro = 'registro_envios.csv'
+    # Crear archivo de registro con encabezados si no existe
+    if not os.path.exists(archivo_registro):
+        with open(archivo_registro, 'w', newline='', encoding='utf-8') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(['Número', 'Token', 'Email', 'Fecha_Hora', 'Enviado'])
     plantilla_html = leer_plantilla_html('template2.html')
     mensaje_vars = leer_variables_mensaje_yaml('mensaje2.yaml')
     render_template(archivo_csv, plantilla_html, mensaje_vars)
